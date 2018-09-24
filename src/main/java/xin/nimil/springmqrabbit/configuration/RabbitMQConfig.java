@@ -1,12 +1,20 @@
 package xin.nimil.springmqrabbit.configuration;
 
 
+import com.rabbitmq.client.Channel;
+import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.core.ChannelAwareMessageListener;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
+import org.springframework.amqp.support.ConsumerTagStrategy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.UUID;
 
 /**
  * @Author:nimil e-mail:nimilgg@qq.com
@@ -32,6 +40,91 @@ public class RabbitMQConfig {
         RabbitAdmin rabbitAdmin = new RabbitAdmin(connectionFactory);
         rabbitAdmin.setAutoStartup(true);
         return rabbitAdmin;
+    }
+
+    @Bean
+    public TopicExchange exchange001(){
+        return new TopicExchange("topic001",true,false);
+    }
+
+    @Bean
+    public Queue queue001(){
+        return new Queue("queue001",true);
+    }
+
+    @Bean
+    public Binding bingding001(){
+        return BindingBuilder.bind(queue001()).to(exchange001()).with("spring.*");
+    }
+
+    @Bean
+    public TopicExchange exchange002(){
+        return new TopicExchange("topic002",true,false);
+    }
+
+    @Bean
+    public Queue queue002(){
+        return new Queue("queue002",true);
+    }
+
+    @Bean
+    public Binding bingding002(){
+        return BindingBuilder.bind(queue002()).to(exchange002()).with("rabbit.*");
+    }
+
+    @Bean
+    public Queue queue003(){
+        return new Queue("queue003",true);
+    }
+
+    @Bean
+    public Binding bingding003(){
+        return BindingBuilder.bind(queue003()).to(exchange001()).with("mq.*");
+    }
+
+
+    @Bean
+    public Queue queue_image(){
+        return new Queue("image_queue",true);
+    }
+
+    @Bean
+    public Queue queue_pdf(){
+        return new Queue("pdf_queue",true);
+    }
+
+    @Bean
+    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory){
+        RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
+        return rabbitTemplate;
+    }
+
+    @Bean
+    public SimpleMessageListenerContainer messageListenerContainer(ConnectionFactory connectionFactory){
+        SimpleMessageListenerContainer simpleMessageListenerContainer = new SimpleMessageListenerContainer(connectionFactory);
+        simpleMessageListenerContainer.setQueues(queue001(),queue002(),queue003(),queue_image(),queue_pdf());
+        simpleMessageListenerContainer.setConcurrentConsumers(1);
+        simpleMessageListenerContainer.setMaxConcurrentConsumers(5);
+        simpleMessageListenerContainer.setDefaultRequeueRejected(false);
+        simpleMessageListenerContainer.setAcknowledgeMode(AcknowledgeMode.AUTO);
+        simpleMessageListenerContainer.setExposeListenerChannel(true);
+
+        simpleMessageListenerContainer.setConsumerTagStrategy(new ConsumerTagStrategy() {
+            @Override
+            public String createConsumerTag(String s) {
+                return s+UUID.randomUUID().toString();
+            }
+        });
+
+        simpleMessageListenerContainer.setMessageListener(new ChannelAwareMessageListener() {
+            @Override
+            public void onMessage(Message message, Channel channel) throws Exception {
+                String msg = new String(message.getBody());
+                System.out.println(msg);
+            }
+        });
+
+        return simpleMessageListenerContainer;
     }
 
 }
