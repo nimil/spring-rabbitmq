@@ -9,10 +9,13 @@ import org.springframework.amqp.rabbit.core.ChannelAwareMessageListener;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
+import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
 import org.springframework.amqp.support.ConsumerTagStrategy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import xin.nimil.springmqrabbit.consumer.Myconsumer;
+import xin.nimil.springmqrabbit.consumer.TextMessageConvert;
 
 import java.util.UUID;
 
@@ -116,6 +119,7 @@ public class RabbitMQConfig {
             }
         });
 
+        /**
         simpleMessageListenerContainer.setMessageListener(new ChannelAwareMessageListener() {
             @Override
             public void onMessage(Message message, Channel channel) throws Exception {
@@ -123,6 +127,15 @@ public class RabbitMQConfig {
                 System.out.println(msg);
             }
         });
+**/
+        //委派对象 支持消息的转换
+        MessageListenerAdapter messageListenerAdapter = new MessageListenerAdapter(new Myconsumer());
+        messageListenerAdapter.setDefaultListenerMethod("consumerMsg");
+        //也可以使用字符串的方式
+        messageListenerAdapter.setMessageConverter(new TextMessageConvert());
+
+        simpleMessageListenerContainer.setMessageListener(messageListenerAdapter);
+
 
         return simpleMessageListenerContainer;
     }

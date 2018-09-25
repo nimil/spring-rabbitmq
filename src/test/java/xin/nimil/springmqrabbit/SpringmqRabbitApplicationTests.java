@@ -62,4 +62,7 @@ public class SpringmqRabbitApplicationTests {
         rabbitTemplate.send("topic001","spring.rabbit",message);
         rabbitTemplate.convertAndSend("topic002","rabbit.abc","hello ran");
 }
+
+
+
 }
