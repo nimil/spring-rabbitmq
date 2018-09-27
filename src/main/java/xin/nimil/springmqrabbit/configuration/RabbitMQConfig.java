@@ -17,6 +17,8 @@ import org.springframework.context.annotation.Configuration;
 import xin.nimil.springmqrabbit.consumer.Myconsumer;
 import xin.nimil.springmqrabbit.consumer.TextMessageConvert;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -129,8 +131,24 @@ public class RabbitMQConfig {
         });
 **/
         //委派对象 支持消息的转换
+    /**
         MessageListenerAdapter messageListenerAdapter = new MessageListenerAdapter(new Myconsumer());
         messageListenerAdapter.setDefaultListenerMethod("consumerMsg");
+        //也可以使用字符串的方式
+        messageListenerAdapter.setMessageConverter(new TextMessageConvert());
+
+        simpleMessageListenerContainer.setMessageListener(messageListenerAdapter);
+
+**/
+    //第二种模式  队列名称和方法名称进行一一匹配
+        MessageListenerAdapter messageListenerAdapter = new MessageListenerAdapter(new Myconsumer());
+
+
+        Map<String, String> stringStringMap = new HashMap<>();
+
+        stringStringMap.put("queue001","method1");
+        stringStringMap.put("queue002","method2");
+        messageListenerAdapter.setQueueOrTagToMethodName(stringStringMap);
         //也可以使用字符串的方式
         messageListenerAdapter.setMessageConverter(new TextMessageConvert());
 

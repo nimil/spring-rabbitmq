@@ -60,7 +60,8 @@ public class SpringmqRabbitApplicationTests {
         Message message = new Message("hello rabbitssss".getBytes(),messageProperties);
 
         rabbitTemplate.send("topic001","spring.rabbit",message);
-        rabbitTemplate.convertAndSend("topic002","rabbit.abc","hello ran");
+       rabbitTemplate.send("topic002","rabbit.abc",message);
+        // rabbitTemplate.convertAndSend("topic002","rabbit.abc","hello ran");
 }
 
 
