@@ -29,8 +29,8 @@ import java.util.UUID;
  * @Date:2018/9/19
  * @Time:22:19
  */
-@Configuration
-@ComponentScan("xin.nimil.*")
+//@Configuration
+//@ComponentScan("xin.nimil.*")
 public class RabbitMQConfig {
 
     @Bean
